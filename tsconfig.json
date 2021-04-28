@@ -1,0 +1,12 @@
+{ 
+  "compilerOptions": {
+    "target": "es6",
+    "watch": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "lib": ["dom", "esnext"],
+    "outDir": "js/"
+  },
+  "files": ["./src/index.ts"],
+  "include": ["./*.ts"]
+}
