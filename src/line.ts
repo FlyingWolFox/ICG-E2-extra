@@ -18,8 +18,8 @@ class OctetSpace {
     TransformFromA: Function
     constructor(dx: number, dy: number) {
         let m = dy/dx;
-        let mirrorx = Math.sign(dx);
-        let mirrory = Math.sign(dy);
+        let mirrorx = dx != 0 ? Math.sign(dx) : 1;
+        let mirrory = dy != 0 ? Math.sign(dy) : 1;
         // octet b or g 
         if (m > 1 || m < -1) {
             this.TransformToA = (x: number, y: number): Point2d => {
