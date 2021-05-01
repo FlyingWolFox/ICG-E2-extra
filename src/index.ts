@@ -3,7 +3,7 @@ import * as Line from './line'
 import * as THREE from 'three'
 
 // Cria um color buffer para armazenar a imagem final.
-let color_buffer = new Canvas("canvas", 1);
+let color_buffer = new Canvas("canvas", 4);
 color_buffer.clear();
 
 /******************************************************************************
@@ -55,6 +55,7 @@ for (let i = 0; i < 8; ++i)
  * Parâmetros da camera sintética.
  *****************************************************************************/
 let cam_pos = new THREE.Vector3(1.3,1.7,2.0);     // posição da câmera no esp. do Universo.
+//let cam_pos = new THREE.Vector3(0.0,0.0,2.0);     // posição da câmera no esp. do Universo.
 let cam_look_at = new THREE.Vector3(0.0,0.0,0.0); // ponto para o qual a câmera aponta.
 let cam_up = new THREE.Vector3(0.0,1.0,0.0);      // vetor Up da câmera.
 
@@ -67,7 +68,7 @@ let cam_up = new THREE.Vector3(0.0,1.0,0.0);      // vetor Up da câmera.
 
     // ---------- implementar aqui ----------------------------------------------
 
-    let cam_z = new THREE.Vector3().subVectors(cam_look_at, cam_pos).normalize();
+    let cam_z = new THREE.Vector3().subVectors(cam_pos, cam_look_at).normalize();
     let cam_x = new THREE.Vector3().crossVectors(cam_up, cam_z).normalize();
     // normalize is not needed, but is here for conformity
     let cam_y = new THREE.Vector3().crossVectors(cam_z, cam_x).normalize();
@@ -75,7 +76,7 @@ let cam_up = new THREE.Vector3(0.0,1.0,0.0);      // vetor Up da câmera.
     let cam_basis = new THREE.Matrix4();
     cam_basis.elements = [...cam_x.toArray(), 0,
                           ...cam_y.toArray(), 0,
-                          ...cam_y.toArray(), 0,
+                          ...cam_z.toArray(), 0,
                           0, 0, 0, 1]
 
     // Construir 'm_bt', a inversa da matriz de base da câmera.
@@ -121,7 +122,7 @@ let cam_up = new THREE.Vector3(0.0,1.0,0.0);      // vetor Up da câmera.
  *****************************************************************************/
 
     for (let i = 0; i < 8; i++)
-        vertices[i].divideScalar(vertices[i].getComponent(3));
+        vertices[i].divideScalar(vertices[i].w);
 
 /******************************************************************************
  * Matriz Viewport: Esp. Canônico --> Esp. Tela
@@ -136,8 +137,8 @@ let cam_up = new THREE.Vector3(0.0,1.0,0.0);      // vetor Up da câmera.
                          0, 0, 0, 1)
 
     let view_scale = new THREE.Matrix4();
-    view_scale.set(128/2,     0, 0, 0,
-                       0, 128/2, 0, 0,
+    view_scale.set(127/2,     0, 0, 0,
+                       0, 127/2, 0, 0,
                        0,     0, 1, 0,
                        0,     0, 0, 1);
 
@@ -153,12 +154,15 @@ let cam_up = new THREE.Vector3(0.0,1.0,0.0);      // vetor Up da câmera.
 
     // ---------- implementar aqui ----------------------------------------------
 
-    color_buffer.putPixel(vertices[6].x, vertices[6].y, [255,0,0,0]); 
+    //color_buffer.putPixel(vertices[6].x, vertices[6].y, [255,0,0,0]); 
     for (let i = 0; i < edges.length; i++)
     {
         let edge = edges[i];
         let v1 = vertices[edge[0]];
         let v2 = vertices[edge[1]];
+        console.log(`v1 = ${v1.toArray()}\nv2 = ${v2.toArray()}`);
+        v1.round()
+        v2.round()
         Line.MidPointLineAlgorithm(color_buffer,
                                    v1.x, v1.y,
                                    v2.x, v2.y,
