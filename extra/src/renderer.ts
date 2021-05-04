@@ -2,6 +2,16 @@ import { Canvas } from './canvas'
 import * as Line from './line'
 import * as THREE from 'three'
 
+export type Vertice = [number, number, number]
+export type Edge = [number, number]
+
+interface Model {
+        vertices: Vertice[]
+        edges: Edge[]
+}
+
+
+
 // Cria um color buffer para armazenar a imagem final.
 let color_buffer = new Canvas("canvas", 4);
 color_buffer.clear();
@@ -108,7 +118,7 @@ let cam_up = new THREE.Vector3(0.0,1.0,0.0);      // vetor Up da câmera.
     // ---------- implementar aqui ----------------------------------------------
     let m_projection = new THREE.Matrix4();
 
-    let d = 1.0;
+    let d = 1;
     m_projection.set(1.0, 0.0,  0.0, 0.0,
                      0.0, 1.0,  0.0, 0.0,
                      0.0, 0.0,  1.0,   d,
