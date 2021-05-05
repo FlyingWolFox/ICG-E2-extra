@@ -3,7 +3,7 @@ import * as THREE from 'three'
 // tridimensional coordinates
 type Coord = [number, number, number]
 
-type Transformation = THREE.Matrix4
+export type Transformation = THREE.Matrix4
 
 // returns [cos(), sin(), -sin(), cos()]
 function create_rotate_submatrix(degrees: number) {

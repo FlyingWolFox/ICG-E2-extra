@@ -3,7 +3,7 @@ import * as Transform from './transformations'
 
 type Coord = [number, number, number]
 
-interface Camera {
+export interface Camera {
     pos: Coord,
     up: [0, 1, 0] | Coord,
     direction: [0, 0, 0] | Coord,
