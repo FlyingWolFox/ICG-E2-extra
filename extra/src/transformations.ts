@@ -8,6 +8,7 @@ type Transformation = THREE.Matrix4
 // returns [cos(), sin(), -sin(), cos()]
 function create_rotate_submatrix(degrees: number) {
     let subm: number[]
+    degrees = degrees*(Math.PI/180)
     subm[0] = Math.cos(degrees)
     subm[1] = Math.sin(degrees)
     subm[2] = -Math.sin(degrees)
@@ -17,6 +18,7 @@ function create_rotate_submatrix(degrees: number) {
 
 export function rotate_x(transform: Transformation, degrees: number) {
     let rotation = new THREE.Matrix4()
+    degrees = degrees*(Math.PI/180)
     let subm = create_rotate_submatrix(degrees)
     rotation.elements[5] = subm[0]
     rotation.elements[6] = subm[1]
@@ -28,6 +30,7 @@ export function rotate_x(transform: Transformation, degrees: number) {
 
 export function rotate_y(transform: Transformation, degrees: number) {
     let rotation = new THREE.Matrix4()
+    degrees = degrees*(Math.PI/180)
     let subm = create_rotate_submatrix(degrees)
     rotation.elements[0] = subm[0]
     rotation.elements[8] = subm[1]
@@ -39,6 +42,7 @@ export function rotate_y(transform: Transformation, degrees: number) {
 
 export function rotate_z(transform: Transformation, degrees: number) {
     let rotation = new THREE.Matrix4()
+    degrees = degrees*(Math.PI/180)
     let subm = create_rotate_submatrix(degrees)
     rotation.elements[0] = subm[0]
     rotation.elements[1] = subm[1]
@@ -49,7 +53,7 @@ export function rotate_z(transform: Transformation, degrees: number) {
 }
 
 // scales the axis individually
-export function scale(transform: Transformation, x: 1, y: 1, z: 1): Transformation {
+export function scale(transform: Transformation, x=1, y=1, z=1): Transformation {
     let scale = new THREE.Matrix4()
     scale.elements[0] = x
     scale.elements[5] = y
@@ -58,7 +62,7 @@ export function scale(transform: Transformation, x: 1, y: 1, z: 1): Transformati
 }
 
 // scales by n times
-export function scale_byfactor(transform: Transformation, factor: 1): Transformation {
+export function scale_byfactor(transform: Transformation, factor=1): Transformation {
     return scale(transform, factor, factor, factor)
 }
 
@@ -80,22 +84,28 @@ export function translate(transform: Transformation, by: Coord): Transformation 
     return new THREE.Matrix4().multiplyMatrices(translate, transform)
 }
 
-export function shear_x(transform: Transformation, degrees_y: 0, degrees_z: 0): Transformation {
+export function shear_x(transform: Transformation, degrees_y=0, degrees_z=0): Transformation {
     let shear = new THREE.Matrix4()
+    degrees_y = degrees_y*(Math.PI/180)
+    degrees_z = degrees_z*(Math.PI/180)
     shear.elements[4] = Math.tan(degrees_y)
     shear.elements[8] = Math.tan(degrees_z)
     return new THREE.Matrix4().multiplyMatrices(shear, transform)
 }
 
-export function shear_y(transform: Transformation, degrees_x: 0, degrees_z: 0): Transformation {
+export function shear_y(transform: Transformation, degrees_x=0, degrees_z=0): Transformation {
     let shear = new THREE.Matrix4()
+    degrees_x = degrees_x*(Math.PI/180)
+    degrees_z = degrees_z*(Math.PI/180)
     shear.elements[1] = Math.tan(degrees_x)
     shear.elements[9] = Math.tan(degrees_z)
     return new THREE.Matrix4().multiplyMatrices(shear, transform)
 }
 
-export function shear_z(transform: Transformation, degrees_x: 0, degrees_y: 0): Transformation {
+export function shear_z(transform: Transformation, degrees_x=0, degrees_y=0): Transformation {
     let shear = new THREE.Matrix4()
+    degrees_x = degrees_x*(Math.PI/180)
+    degrees_y = degrees_y*(Math.PI/180)
     shear.elements[2] = Math.tan(degrees_x)
     shear.elements[6] = Math.tan(degrees_y)
     return new THREE.Matrix4().multiplyMatrices(shear, transform)
