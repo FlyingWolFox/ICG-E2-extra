@@ -1,13 +1,17 @@
 import { Canvas } from './canvas'
 import * as Line from './line'
 import * as THREE from 'three'
+import { Camera } from './camera'
+import { Transformation } from './transformations'
 
 export type Vertice = [number, number, number]
 export type Edge = [number, number]
+export type Screen = Canvas
 
-interface Model {
+export interface Mesh {
         vertices: Vertice[]
         edges: Edge[]
+        tranform: Transformation
 }
 
 
