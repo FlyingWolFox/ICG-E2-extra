@@ -8,7 +8,7 @@ export import Transformation = THREE.Matrix4
 
 // returns [cos(), sin(), -sin(), cos()]
 function create_rotate_submatrix(degrees: number) {
-    let subm: number[]
+    let subm = [0, 0, 0, 0]
     degrees = degrees*(Math.PI/180)
     subm[0] = Math.cos(degrees)
     subm[1] = Math.sin(degrees)
