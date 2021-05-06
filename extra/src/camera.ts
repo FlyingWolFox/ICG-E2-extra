@@ -5,9 +5,22 @@ type Coord = [number, number, number]
 
 export interface Camera {
     pos: Coord,
-    up: [0, 1, 0] | Coord,
-    direction: [0, 0, 0] | Coord,
-    focal_point: 1
+    up: Coord,
+    direction: Coord,
+    focal_point: number
+}
+export class Camera {
+    pos: Coord
+    up: Coord
+    direction: Coord
+    focal_point: number
+
+    constructor(pos: Coord, up: Coord = [0, 1, 0], direction: Coord = [0, 0, 0], focal_point = 1) {
+        this.pos = pos
+        this.up = up
+        this.direction = direction
+        this.focal_point = focal_point
+    }
 }
 
 function clone_cam(cam: Camera): Camera {
