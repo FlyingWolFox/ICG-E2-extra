@@ -68,6 +68,7 @@ let cam_up = new THREE.Vector3(0.0,1.0,0.0);      // vetor Up da câmera.
 
     // ---------- implementar aqui ----------------------------------------------
 
+    // there's no invertion hrere because the subtraction is inverted, already yelding the negative value
     let cam_z = new THREE.Vector3().subVectors(cam_pos, cam_look_at).normalize();
     let cam_x = new THREE.Vector3().crossVectors(cam_up, cam_z).normalize();
     // normalize is not needed, but is here for conformity
@@ -86,6 +87,7 @@ let cam_up = new THREE.Vector3(0.0,1.0,0.0);      // vetor Up da câmera.
     // Construir a matriz 'm_t' de translação para tratar os casos em que as
     // origens do espaço do universo e da câmera não coincidem.
 
+    // same thing of line 86: the cam_displacement is already inverted, no need for minus signs on the matrix
     let cam_displacement = new THREE.Vector3().subVectors(new THREE.Vector3(), cam_pos);
     let m_t = new THREE.Matrix4();
     m_t.set(1, 0, 0, cam_displacement.x,
@@ -160,7 +162,6 @@ let cam_up = new THREE.Vector3(0.0,1.0,0.0);      // vetor Up da câmera.
         let edge = edges[i];
         let v1 = vertices[edge[0]];
         let v2 = vertices[edge[1]];
-        console.log(`v1 = ${v1.toArray()}\nv2 = ${v2.toArray()}`);
         v1.round()
         v2.round()
         Line.MidPointLineAlgorithm(color_buffer,
