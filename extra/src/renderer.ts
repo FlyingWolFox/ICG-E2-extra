@@ -83,7 +83,6 @@ export function render(cam: Camera, screen: Screen, meshs: Mesh[] = []) {
                               0, 0, 0, 1]
 
         let m_bt = cam_basis.clone().transpose();
-        pipeline.push(m_bt) // put the change of basis matrix on the pipeline
 
         // same thing of line ##: the cam_displacement is already inverted, no need for minus signs on the matrix
         let cam_displacement = new THREE.Vector3().subVectors(new THREE.Vector3(), cam_pos);
@@ -94,6 +93,7 @@ export function render(cam: Camera, screen: Screen, meshs: Mesh[] = []) {
                 0, 0, 0, 1)
 
         pipeline.push(m_t) // push the translation that might be necessary if the camera isn't on the origin
+        pipeline.push(m_bt) // put the change of basis matrix on the pipeline
 
         // clipping
 
@@ -106,11 +106,16 @@ export function render(cam: Camera, screen: Screen, meshs: Mesh[] = []) {
                          0.0, 0.0, -1/d, 0.0);
         pipeline.push(m_projection)
 
+
         // apply the pipeline before homogenization                 
         let pipeline_matrix = new THREE.Matrix4()
-        for (let i = 0; i < pipeline.length; i++)
+        for (let i = pipeline.length - 1; i >= 0; i--)
                 pipeline_matrix.multiply(pipeline[i])
+        console.log(pipeline_matrix)
         pipeline.length = 0 // clears the pipeline
+        for (let i = 0; i < vertices.length; i++)
+                vertices[i].applyMatrix4(pipeline_matrix)
+
 
         // homogenization 
         for (let i = 0; i < vertices.length; i++)
