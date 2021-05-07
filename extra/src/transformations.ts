@@ -19,7 +19,6 @@ function create_rotate_submatrix(degrees: number) {
 
 export function rotate_x(transform: Transformation, degrees: number) {
     let rotation = new THREE.Matrix4()
-    degrees = degrees*(Math.PI/180)
     let subm = create_rotate_submatrix(degrees)
     rotation.elements[5] = subm[0]
     rotation.elements[6] = subm[1]
@@ -31,7 +30,6 @@ export function rotate_x(transform: Transformation, degrees: number) {
 
 export function rotate_y(transform: Transformation, degrees: number) {
     let rotation = new THREE.Matrix4()
-    degrees = degrees*(Math.PI/180)
     let subm = create_rotate_submatrix(degrees)
     rotation.elements[0] = subm[0]
     rotation.elements[8] = subm[1]
@@ -43,7 +41,6 @@ export function rotate_y(transform: Transformation, degrees: number) {
 
 export function rotate_z(transform: Transformation, degrees: number) {
     let rotation = new THREE.Matrix4()
-    degrees = degrees*(Math.PI/180)
     let subm = create_rotate_submatrix(degrees)
     rotation.elements[0] = subm[0]
     rotation.elements[1] = subm[1]
