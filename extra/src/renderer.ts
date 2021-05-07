@@ -113,11 +113,25 @@ export function render(cam: Camera, screen: Screen, meshs: Mesh[] = []) {
 
         let m_projection = new THREE.Matrix4();
 
-        let d = cam.focal_point;
+        /*
+        let d = cam.near_plane;
         m_projection.set(1.0, 0.0,  0.0, 0.0,
                          0.0, 1.0,  0.0, 0.0,
                          0.0, 0.0,  1.0,   d,
                          0.0, 0.0, -1/d, 0.0);
+        pipeline.push(m_projection)
+        */
+
+        let n = cam.near_plane
+        let f = cam.far_plane
+        let t = Math.tan(cam.vertical_fov*Math.PI/180 / 2)
+        let r = Math.tan(cam.horizontal_fov*Math.PI/180 / 2)
+        let b = -t
+        let l = -r
+        m_projection.set(2*n/(r-l),       0.0,  (l+r)/(l-r),           0.0,
+                               0.0, 2*n/(t-b),  (b+t)/(b-t),           0.0,
+                               0.0,       0.0,  (f+n)/(n-f),   2*f*n/(f-n),
+                               0.0,       0.0,            1,           0.0);
         pipeline.push(m_projection)
 
 
