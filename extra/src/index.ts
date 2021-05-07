@@ -35,8 +35,7 @@ let cube: Renderer.Mesh = {
 }
 
 
-//let camera = new Camera.Camera([1.3,1.7,2.0])
-let camera = new Camera.Camera([0,0,2.0])
+let camera = new Camera.Camera([1.3,1.7,2.0])
 
 
 var playfield = {
@@ -70,10 +69,6 @@ function mode_1() {
         if (Keys.input['s2_right'])
                 cube.transform = Transformations.rotate_y(cube.transform, -5)
         
-        Object.keys(Keys.input).forEach((element: string) => {
-                if (Keys.input[element])
-                        console.log(`${element} is pressed`)
-        })
 }
 
 function mode_2() {
@@ -82,16 +77,14 @@ function mode_2() {
                 playfield.mode = 2
         }
 
-        let old = camera.pos
-
         if (Keys.input['s1_up']) 
-                camera = Camera.move(camera, [0, 0, -0.1])
+                camera = Camera.translate(camera, [0, 0, -0.1])
         if (Keys.input['s1_down'])
-                camera = Camera.move(camera, [0, 0, 0.1])
+                camera = Camera.translate(camera, [0, 0, 0.1])
         if (Keys.input['s1_left'])
-                camera = Camera.move(camera, [-0.1, 0, 0])
+                camera = Camera.translate(camera, [-0.1, 0, 0])
         if (Keys.input['s1_right'])
-                camera = Camera.move(camera, [0.1, 0, 0])
+                camera = Camera.translate(camera, [0.1, 0, 0])
 
         if (Keys.input['s2_up'])
                 camera = Camera.rotate_vertical(camera, -5)
@@ -102,19 +95,57 @@ function mode_2() {
         if (Keys.input['s2_right'])
                 camera = Camera.rotate_horizontal(camera, -5)
         
-        Object.keys(Keys.input).forEach((element: string) => {
-                if (Keys.input[element]) {
-                        //console.log(`${element} is pressed`)
-                }
-        })
+}
 
-        if (camera.pos != old)
-                console.log(camera.pos)
+let shear_counter = 0
+function mode_3() {
+        if (shear_counter < 25 || shear_counter >= 75) {
+                cube.transform = Transformations.shear_x(cube.transform, 0.9)
+        }
+        else {
+                cube.transform = Transformations.shear_x(cube.transform, -0.9)
+        }
+        shear_counter = (shear_counter + 1)%100
 
 }
 
+let last = 1
+let text = '(Cube Control)'
+let mode_on_page = document.getElementById('mode')
 function loop() {
-        mode_2()
+        let mode = last
+        if (Keys.input['mode_1']) {
+                mode = 1
+                text = '(Cube Control)'
+        }
+        else if (Keys.input['mode_2']) {
+                mode = 2
+                text = '(Camera Control)'
+        }
+        else if (Keys.input['mode_3']) {
+                mode = 3
+                text = '(Shear Animation)'
+        }
+
+        switch (mode) {
+                case 1:
+                        mode_1()
+                        break;
+                case 2:
+                        mode_2()
+                        break
+                case 3:
+                        mode_3()
+                        break
+        
+                default:
+                        mode_1()
+                        break;
+        }
+        last = mode
+        if (mode_on_page != null)
+                mode_on_page.innerHTML = `Current mode: ${mode} ${text}`
+
         Renderer.render(camera, screen, [cube])
 }
 
