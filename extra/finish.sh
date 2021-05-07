@@ -12,4 +12,5 @@ sed -i "s/'\.\/transformations'/'.\/transformations.js'/" js/renderer.js
 sed -i "s/'\.\/transformations'/'.\/transformations.js'/" js/index.js
 sed -i "s/'\.\/line'/'.\/line.js'/" js/renderer.js
 sed -i "s/'\.\/renderer'/'.\/renderer.js'/" js/index.js
+sed -i "s/'\.\/input'/'.\/input.js'/" js/index.js
 echo "Done!"
