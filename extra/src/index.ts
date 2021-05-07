@@ -1,8 +1,9 @@
 import * as Renderer from './renderer'
 import * as Camera from './camera'
 import * as Transformations from './transformations'
+import * as Keys from './input'
 
-let screen = new Renderer.Screen('canvas', 4)
+let screen = new Renderer.Screen('canvas', 1)
 screen.clear()
 
 let cube: Renderer.Mesh = {
@@ -36,9 +37,91 @@ let cube: Renderer.Mesh = {
 
 let camera: Camera.Camera = {
         pos: [1.3,1.7,2.0],     // posição da câmera no esp. do Universo.
+        //pos: [0,0,3],     // posição da câmera no esp. do Universo.
         look_at: [0.0,0.0,0.0], // ponto para o qual a câmera aponta.
         up: [0.0,1.0,0.0],      // vetor Up da câmera.
         focal_point: 1
 }
 
-Renderer.render(camera, screen, [cube])
+
+var playfield = {
+        meshs: [cube],
+        cam: camera,
+        screen: screen,
+        mode: 1
+}
+
+function mode_1() {
+        if (playfield.mode != 1) {
+                // load stuff
+                playfield.mode = 1
+        }
+
+        if (Keys.input['s1_up'])
+                cube.transform = Transformations.translate(cube.transform, [0, 0.1, 0])
+        if (Keys.input['s1_down'])
+                cube.transform = Transformations.translate(cube.transform, [0, -0.1, 0])
+        if (Keys.input['s1_left'])
+                cube.transform = Transformations.translate(cube.transform, [-0.1, 0, 0])
+        if (Keys.input['s1_right'])
+                cube.transform = Transformations.translate(cube.transform, [0.1, 0, 0])
+
+        if (Keys.input['s2_up'])
+                cube.transform = Transformations.rotate_x(cube.transform, -5)
+        if (Keys.input['s2_down'])
+                cube.transform = Transformations.rotate_x(cube.transform, 5)
+        if (Keys.input['s2_left'])
+                cube.transform = Transformations.rotate_y(cube.transform, 5)
+        if (Keys.input['s2_right'])
+                cube.transform = Transformations.rotate_y(cube.transform, -5)
+        
+        Object.keys(Keys.input).forEach((element: string) => {
+                if (Keys.input[element])
+                        console.log(`${element} is pressed`)
+        })
+}
+
+function mode_2() {
+        if (playfield.mode != 2) {
+                // load stuff
+                playfield.mode = 2
+        }
+
+        let old = camera.look_at
+
+        if (Keys.input['s1_up'])
+                camera = Camera.translate_unlocked(camera, [0, 0, -0.1])
+        if (Keys.input['s1_down'])
+                camera = Camera.translate_unlocked(camera, [0, 0, 0.1])
+        if (Keys.input['s1_left'])
+                camera = Camera.translate_unlocked(camera, [-0.1, 0, 0])
+        if (Keys.input['s1_right'])
+                camera = Camera.translate_unlocked(camera, [0.1, 0, 0])
+
+        if (Keys.input['s2_up'])
+                camera = Camera.rotate_vertical(camera, -5)
+        if (Keys.input['s2_down'])
+                camera = Camera.rotate_vertical(camera, 5)
+        if (Keys.input['s2_left'])
+                camera = Camera.rotate_horizontal(camera, 5)
+        if (Keys.input['s2_right'])
+                camera = Camera.rotate_horizontal(camera, -5)
+        
+        Object.keys(Keys.input).forEach((element: string) => {
+                if (Keys.input[element]) {
+                        //console.log(`${element} is pressed`)
+                }
+        })
+
+        if (camera.look_at != old)
+                console.log(camera.look_at)
+}
+
+function loop() {
+        mode_2()
+        Renderer.render(camera, screen, [cube])
+}
+
+window.onkeydown = Keys.press
+window.onkeyup = Keys.release
+Renderer.requestAnimationFrame(loop)
