@@ -35,13 +35,8 @@ let cube: Renderer.Mesh = {
 }
 
 
-let camera: Camera.Camera = {
-        pos: [1.3,1.7,2.0],     // posição da câmera no esp. do Universo.
-        //pos: [0,0,3],     // posição da câmera no esp. do Universo.
-        look_at: [0.0,0.0,0.0], // ponto para o qual a câmera aponta.
-        up: [0.0,1.0,0.0],      // vetor Up da câmera.
-        focal_point: 1
-}
+//let camera = new Camera.Camera([1.3,1.7,2.0])
+let camera = new Camera.Camera([0,0,2.0])
 
 
 var playfield = {
@@ -87,16 +82,16 @@ function mode_2() {
                 playfield.mode = 2
         }
 
-        let old = camera.look_at
+        let old = camera.pos
 
-        if (Keys.input['s1_up'])
-                camera = Camera.translate_unlocked(camera, [0, 0, -0.1])
+        if (Keys.input['s1_up']) 
+                camera = Camera.move(camera, [0, 0, -0.1])
         if (Keys.input['s1_down'])
-                camera = Camera.translate_unlocked(camera, [0, 0, 0.1])
+                camera = Camera.move(camera, [0, 0, 0.1])
         if (Keys.input['s1_left'])
-                camera = Camera.translate_unlocked(camera, [-0.1, 0, 0])
+                camera = Camera.move(camera, [-0.1, 0, 0])
         if (Keys.input['s1_right'])
-                camera = Camera.translate_unlocked(camera, [0.1, 0, 0])
+                camera = Camera.move(camera, [0.1, 0, 0])
 
         if (Keys.input['s2_up'])
                 camera = Camera.rotate_vertical(camera, -5)
@@ -113,8 +108,9 @@ function mode_2() {
                 }
         })
 
-        if (camera.look_at != old)
-                console.log(camera.look_at)
+        if (camera.pos != old)
+                console.log(camera.pos)
+
 }
 
 function loop() {
