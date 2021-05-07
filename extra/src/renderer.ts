@@ -27,8 +27,22 @@ export class Mesh {
         }
 }
 
+var callback : () => any
+
+function newFrame() {
+        callback()
+        window.requestAnimationFrame(newFrame);
+}
+
+
+export function requestAnimationFrame(fun: () => any) {
+        callback = fun
+        window.requestAnimationFrame(newFrame);
+}
 
 export function render(cam: Camera, screen: Screen, meshs: Mesh[] = []) {
+        screen.clear()
+
         let vertices: THREE.Vector4[] = []
         let edges: Edge[] = []
 
@@ -111,7 +125,6 @@ export function render(cam: Camera, screen: Screen, meshs: Mesh[] = []) {
         let pipeline_matrix = new THREE.Matrix4()
         for (let i = pipeline.length - 1; i >= 0; i--)
                 pipeline_matrix.multiply(pipeline[i])
-        console.log(pipeline_matrix)
         pipeline.length = 0 // clears the pipeline
         for (let i = 0; i < vertices.length; i++)
                 vertices[i].applyMatrix4(pipeline_matrix)
