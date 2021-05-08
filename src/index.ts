@@ -1,171 +1,154 @@
-import { Canvas } from './canvas'
-import * as Line from './line'
-import * as THREE from 'three'
+import * as Renderer from './renderer'
+import * as Camera from './camera'
+import * as Transformations from './transformations'
+import * as Keys from './input'
 
-// Cria um color buffer para armazenar a imagem final.
-let color_buffer = new Canvas("canvas", 4);
-color_buffer.clear();
+let screen = new Renderer.Screen('canvas', 1)
+screen.clear()
 
-/******************************************************************************
- * Vértices do modelo (cubo) centralizado no seu espaco do objeto. Os dois
- * vértices extremos do cubo são (-1,-1,-1) e (1,1,1), logo, cada aresta do cubo
- * tem comprimento igual a 2. 
- *****************************************************************************/
-//                                   X     Y     Z    W (coord. homogênea)
-let vertices = [new THREE.Vector4(-1.0, -1.0, -1.0, 1.0),
-                new THREE.Vector4( 1.0, -1.0, -1.0, 1.0),
-                new THREE.Vector4( 1.0, -1.0,  1.0, 1.0),
-                new THREE.Vector4(-1.0, -1.0,  1.0, 1.0),
-                new THREE.Vector4(-1.0,  1.0, -1.0, 1.0),
-                new THREE.Vector4( 1.0,  1.0, -1.0, 1.0),
-                new THREE.Vector4( 1.0,  1.0,  1.0, 1.0),
-                new THREE.Vector4(-1.0,  1.0,  1.0, 1.0)];
+let cube: Renderer.Mesh = {
+        vertices: [[-1.0, -1.0, -1.0],
+                    [ 1.0, -1.0, -1.0],
+                    [ 1.0, -1.0,  1.0],
+                    [-1.0, -1.0,  1.0],
+                    [-1.0,  1.0, -1.0],
+                    [ 1.0,  1.0, -1.0],
+                    [ 1.0,  1.0,  1.0],
+                    [-1.0,  1.0,  1.0]],
 
-/******************************************************************************
- * As 12 arestas do cubo, indicadas através dos índices dos seus vértices.
- *****************************************************************************/
-let edges = [[0,1],
-             [1,2],
-             [2,3],
-             [3,0],
-             [4,5],
-             [5,6],
-             [6,7],
-             [7,4],
-             [0,4],
-             [1,5],
-             [2,6],
-             [3,7]];
-
-/******************************************************************************
- * Matriz Model (modelagem): Esp. Objeto --> Esp. Universo. 
- * OBS: A matriz está carregada inicialmente com a identidade.
- *****************************************************************************/
-let m_model = new THREE.Matrix4();
-
-m_model.set(1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.0,
-            0.0, 0.0, 0.0, 1.0);
-
-for (let i = 0; i < 8; ++i)
-        vertices[i].applyMatrix4(m_model);
-
-/******************************************************************************
- * Parâmetros da camera sintética.
- *****************************************************************************/
-let cam_pos = new THREE.Vector3(1.3,1.7,2.0);     // posição da câmera no esp. do Universo.
-//let cam_pos = new THREE.Vector3(0.0,0.0,2.0);     // posição da câmera no esp. do Universo.
-let cam_look_at = new THREE.Vector3(0.0,0.0,0.0); // ponto para o qual a câmera aponta.
-let cam_up = new THREE.Vector3(0.0,1.0,0.0);      // vetor Up da câmera.
-
-/******************************************************************************
- * Matriz View (visualização): Esp. Universo --> Esp. Câmera
- * OBS: A matriz está carregada inicialmente com a identidade. 
- *****************************************************************************/
-
-    // Derivar os vetores da base da câmera a partir dos parâmetros informados acima.
-
-    // ---------- implementar aqui ----------------------------------------------
-
-    // there's no invertion hrere because the subtraction is inverted, already yelding the negative value
-    let cam_z = new THREE.Vector3().subVectors(cam_pos, cam_look_at).normalize();
-    let cam_x = new THREE.Vector3().crossVectors(cam_up, cam_z).normalize();
-    // normalize is not needed, but is here for conformity
-    let cam_y = new THREE.Vector3().crossVectors(cam_z, cam_x).normalize();
-
-    let cam_basis = new THREE.Matrix4();
-    cam_basis.elements = [...cam_x.toArray(), 0,
-                          ...cam_y.toArray(), 0,
-                          ...cam_z.toArray(), 0,
-                          0, 0, 0, 1]
-
-    // Construir 'm_bt', a inversa da matriz de base da câmera.
-
-    let m_bt = cam_basis.clone().transpose();
-
-    // Construir a matriz 'm_t' de translação para tratar os casos em que as
-    // origens do espaço do universo e da câmera não coincidem.
-
-    // same thing of line 86: the cam_displacement is already inverted, no need for minus signs on the matrix
-    let cam_displacement = new THREE.Vector3().subVectors(new THREE.Vector3(), cam_pos);
-    let m_t = new THREE.Matrix4();
-    m_t.set(1, 0, 0, cam_displacement.x,
-            0, 1, 0, cam_displacement.y,
-            0, 0, 1, cam_displacement.z,
-            0, 0, 0, 1)
-
-    // Constrói a matriz de visualização 'm_view' como o produto
-    //  de 'm_bt' e 'm_t'.
-    let m_view = m_bt.clone().multiply(m_t);
-
-    for (let i = 0; i < 8; ++i)
-            vertices[i].applyMatrix4(m_view);
-
-/******************************************************************************
- * Matriz de Projecao: Esp. Câmera --> Esp. Recorte
- * OBS: A matriz está carregada inicialmente com a identidade. 
- *****************************************************************************/
-
-    // ---------- implementar aqui ----------------------------------------------
-    let m_projection = new THREE.Matrix4();
-
-    let d = 1;
-    m_projection.set(1.0, 0.0,  0.0, 0.0,
-                     0.0, 1.0,  0.0, 0.0,
-                     0.0, 0.0,  1.0,   d,
-                     0.0, 0.0, -1/d, 0.0);
-
-    for (let i = 0; i < 8; ++i)
-        vertices[i].applyMatrix4(m_projection);
-
-/******************************************************************************
- * Homogeneizacao (divisao por W): Esp. Recorte --> Esp. Canônico
- *****************************************************************************/
-
-    for (let i = 0; i < 8; i++)
-        vertices[i].divideScalar(vertices[i].w);
-
-/******************************************************************************
- * Matriz Viewport: Esp. Canônico --> Esp. Tela
- * OBS: A matriz está carregada inicialmente com a identidade. 
- *****************************************************************************/
-
-    // ---------- implementar aqui ----------------------------------------------
-    let view_translation = new THREE.Matrix4();
-    view_translation.set(1, 0, 0, 1,
-                         0, 1, 0, 1,
-                         0, 0, 1, 0,
-                         0, 0, 0, 1)
-
-    let view_scale = new THREE.Matrix4();
-    view_scale.set(127/2,     0, 0, 0,
-                       0, 127/2, 0, 0,
-                       0,     0, 1, 0,
-                       0,     0, 0, 1);
-
-    let m_viewport = view_scale.clone().multiply(view_translation);
+         edges: [[0,1, [255, 0, 0, 0], [255, 0, 0, 0]],
+                 [1,2, [255, 0, 0, 0], [255, 0, 0, 0]],
+                 [2,3, [255, 0, 0, 0], [255, 0, 0, 0]],
+                 [3,0, [255, 0, 0, 0], [255, 0, 0, 0]],
+                 [4,5, [255, 0, 0, 0], [255, 0, 0, 0]],
+                 [5,6, [255, 0, 0, 0], [255, 0, 0, 0]],
+                 [6,7, [255, 0, 0, 0], [255, 0, 0, 0]],
+                 [7,4, [255, 0, 0, 0], [255, 0, 0, 0]],
+                 [0,4, [255, 0, 0, 0], [255, 0, 0, 0]],
+                 [1,5, [255, 0, 0, 0], [255, 0, 0, 0]],
+                 [2,6, [255, 0, 0, 0], [255, 0, 0, 0]],
+                 [3,7, [255, 0, 0, 0], [255, 0, 0, 0]]],
+        transform: new  Transformations.Transformation().set(1.0, 0.0, 0.0, 0.0,
+                                                             0.0, 1.0, 0.0, 0.0,
+                                                             0.0, 0.0, 1.0, 0.0,
+                                                             0.0, 0.0, 0.0, 1.0) 
+}
 
 
-    for (let i = 0; i < 8; ++i)
-        vertices[i].applyMatrix4(m_viewport);
+let camera = new Camera.Camera([1.3,1.7,2.0])
 
-/******************************************************************************
- * Rasterização
- *****************************************************************************/
 
-    // ---------- implementar aqui ----------------------------------------------
+var playfield = {
+        meshs: [cube],
+        cam: camera,
+        screen: screen,
+        mode: 1
+}
 
-    //color_buffer.putPixel(vertices[6].x, vertices[6].y, [255,0,0,0]); 
-    for (let i = 0; i < edges.length; i++)
-    {
-        let edge = edges[i];
-        let v1 = vertices[edge[0]];
-        let v2 = vertices[edge[1]];
-        v1.round()
-        v2.round()
-        Line.MidPointLineAlgorithm(color_buffer,
-                                   v1.x, v1.y,
-                                   v2.x, v2.y,
-                                   [255, 0, 0, 0], [255, 0, 0, 0]);
-    }
+function mode_1() {
+        if (playfield.mode != 1) {
+                // load stuff
+                playfield.mode = 1
+        }
+
+        if (Keys.input['s1_up'])
+                cube.transform = Transformations.translate(cube.transform, [0, 0.1, 0])
+        if (Keys.input['s1_down'])
+                cube.transform = Transformations.translate(cube.transform, [0, -0.1, 0])
+        if (Keys.input['s1_left'])
+                cube.transform = Transformations.translate(cube.transform, [-0.1, 0, 0])
+        if (Keys.input['s1_right'])
+                cube.transform = Transformations.translate(cube.transform, [0.1, 0, 0])
+
+        if (Keys.input['s2_up'])
+                cube.transform = Transformations.rotate_x(cube.transform, -5)
+        if (Keys.input['s2_down'])
+                cube.transform = Transformations.rotate_x(cube.transform, 5)
+        if (Keys.input['s2_left'])
+                cube.transform = Transformations.rotate_y(cube.transform, 5)
+        if (Keys.input['s2_right'])
+                cube.transform = Transformations.rotate_y(cube.transform, -5)
+        
+}
+
+function mode_2() {
+        if (playfield.mode != 2) {
+                // load stuff
+                playfield.mode = 2
+        }
+
+        if (Keys.input['s1_up']) 
+                camera = Camera.translate(camera, [0, 0, -0.1])
+        if (Keys.input['s1_down'])
+                camera = Camera.translate(camera, [0, 0, 0.1])
+        if (Keys.input['s1_left'])
+                camera = Camera.translate(camera, [-0.1, 0, 0])
+        if (Keys.input['s1_right'])
+                camera = Camera.translate(camera, [0.1, 0, 0])
+
+        if (Keys.input['s2_up'])
+                camera = Camera.rotate_vertical(camera, -5)
+        if (Keys.input['s2_down'])
+                camera = Camera.rotate_vertical(camera, 5)
+        if (Keys.input['s2_left'])
+                camera = Camera.rotate_horizontal(camera, 5)
+        if (Keys.input['s2_right'])
+                camera = Camera.rotate_horizontal(camera, -5)
+        
+}
+
+let shear_counter = 0
+function mode_3() {
+        if (shear_counter < 25 || shear_counter >= 75) {
+                cube.transform = Transformations.shear_x(cube.transform, 0.9)
+        }
+        else {
+                cube.transform = Transformations.shear_x(cube.transform, -0.9)
+        }
+        shear_counter = (shear_counter + 1)%100
+
+}
+
+let last = 1
+let text = '(Cube Control)'
+let mode_on_page = document.getElementById('mode')
+function loop() {
+        let mode = last
+        if (Keys.input['mode_1']) {
+                mode = 1
+                text = '(Cube Control)'
+        }
+        else if (Keys.input['mode_2']) {
+                mode = 2
+                text = '(Camera Control)'
+        }
+        else if (Keys.input['mode_3']) {
+                mode = 3
+                text = '(Shear Animation)'
+        }
+
+        switch (mode) {
+                case 1:
+                        mode_1()
+                        break;
+                case 2:
+                        mode_2()
+                        break
+                case 3:
+                        mode_3()
+                        break
+        
+                default:
+                        mode_1()
+                        break;
+        }
+        last = mode
+        if (mode_on_page != null)
+                mode_on_page.innerHTML = `Current mode: ${mode} ${text}`
+
+        Renderer.render(camera, screen, [cube])
+}
+
+window.onkeydown = Keys.press
+window.onkeyup = Keys.release
+Renderer.requestAnimationFrame(loop)
