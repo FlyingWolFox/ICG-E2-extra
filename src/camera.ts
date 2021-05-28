@@ -48,7 +48,7 @@ export function clone_cam(cam: Camera): Camera {
             horizontal_fov: cam.horizontal_fov}
 }
 
-export function rotate_horizontal(cam: Camera, degrees = 0) {
+export function rotate_x(cam: Camera, degrees = 0) {
     let util_matrix = new THREE.Matrix4()
     util_matrix = Transform.rotate_y(util_matrix, degrees)
     let new_cam = clone_cam(cam)
@@ -63,7 +63,7 @@ export function rotate_horizontal(cam: Camera, degrees = 0) {
     return new_cam
 }
 
-export function rotate_vertical(cam: Camera, degrees = 0) {
+export function rotate_y(cam: Camera, degrees = 0) {
     let util_matrix = new THREE.Matrix4()
     util_matrix = Transform.rotate_x(util_matrix, degrees)
     let new_cam = clone_cam(cam)
@@ -78,7 +78,7 @@ export function rotate_vertical(cam: Camera, degrees = 0) {
     return new_cam
 }
 
-export function rotate_clockwise(cam: Camera, degrees = 0) {
+export function rotate_z(cam: Camera, degrees = 0) {
     let util_matrix = new THREE.Matrix4()
     util_matrix = Transform.rotate_z(util_matrix, degrees)
     let new_cam = clone_cam(cam)
@@ -87,7 +87,7 @@ export function rotate_clockwise(cam: Camera, degrees = 0) {
     return new_cam
 }
 
-export function translate_locked(cam: Camera, by: [number, number, number]) {
+export function translate_orbit(cam: Camera, by: [number, number, number]) {
     let new_cam = clone_cam(cam)
     new_cam.pos[0] += by[0]
     new_cam.pos[1] += by[1]
@@ -125,38 +125,107 @@ export function move(cam: Camera, by: Coord) {
     let x = new THREE.Vector3().crossVectors(up, z).normalize()
     let y = new THREE.Vector3().crossVectors(z, x).normalize()
 
-    let m_b = new THREE.Matrix4()
-    m_b.elements = [...x.toArray(), 0,
-                    ...y.toArray(), 0,
-                    ...z.toArray(), 0,
-                    0, 0, 0, 1]
-    let m_bt = m_b.clone().transpose()
+    let move_vec = new THREE.Vector3()
+    move_vec.add(x.multiplyScalar(by[0]))
+    move_vec.add(y.multiplyScalar(by[1]))
+    move_vec.add(z.multiplyScalar(by[2]))
 
-    let m_t = new THREE.Matrix4()
-    m_t.elements[12] = pos.x
-    m_t.elements[13] = pos.y
-    m_t.elements[14] = pos.z
+    pos.add(move_vec)
+    look_at.add(move_vec)
 
-    let move = new THREE.Matrix4()
-    move.elements[12] = by[0]
-    move.elements[13] = by[1]
-    move.elements[14] = by[2]
-    
-    pos.fromArray(by)
-    z = pos.clone()
-    z.z += 1
-
-    let util_matrix = new THREE.Matrix4().multiply(m_t).multiply(m_b)
-
-    pos.applyMatrix4(util_matrix)
-    z.applyMatrix4(util_matrix)
-
-
-    look_at.subVectors(pos, z)
-
-    new_cam.look_at = look_at.toArray()
-    //new_cam.look_at = direction.toArray()
     new_cam.pos = pos.toArray()
+    new_cam.look_at = look_at.toArray()
 
+    return new_cam
+}
+
+export function rotate_horizontal(cam: Camera, degrees = 0) {
+    let new_cam = clone_cam(cam)
+
+    let up = new THREE.Vector3().fromArray(cam.up)
+    let look_at = new THREE.Vector3().fromArray(cam.look_at)
+    let pos = new THREE.Vector3().fromArray(cam.pos)
+    let direction = new THREE.Vector3().subVectors(look_at, pos)
+
+    let z = new THREE.Vector3().subVectors(pos, look_at).normalize()
+    let x = new THREE.Vector3().crossVectors(up, z).normalize()
+    let y = new THREE.Vector3().crossVectors(z, x).normalize()
+    
+    let direction_cos = direction.normalize().dot(x)
+    let direction_angle = Math.acos(direction_cos)
+    let direction_sin = Math.sin(direction_angle)
+    let new_angle = direction_angle + degrees * (Math.PI/180)
+
+    let pseudo_x = new THREE.Vector3()
+    let pseudo_z = new THREE.Vector3()
+    pseudo_x.x = direction.length() * (Math.cos(new_angle) - direction_cos)
+    pseudo_z.z = direction.length() * (Math.sin(new_angle) - direction_sin)
+
+    let util_matrix = new THREE.Matrix4()
+    util_matrix = Transform.rotate_y(util_matrix, Math.acos(direction.dot(x)))
+
+    let real_x = new THREE.Vector3()
+    real_x.add(x.clone().multiplyScalar(pseudo_x.x))
+    real_x.add(y.clone().multiplyScalar(pseudo_x.y))
+    real_x.add(z.clone().negate().multiplyScalar(pseudo_x.z))
+    let real_z = new THREE.Vector3()
+    real_z.add(x.clone().multiplyScalar(pseudo_z.x))
+    real_z.add(y.clone().multiplyScalar(pseudo_z.y))
+    real_z.add(z.clone().negate().multiplyScalar(pseudo_z.z))
+
+    direction.add(real_x).add(real_z).normalize()
+    look_at.addVectors(direction, pos)
+    new_cam.look_at = look_at.toArray()
+
+    return new_cam
+}
+
+export function rotate_vertical(cam: Camera, degrees = 0) {
+    let new_cam = clone_cam(cam)
+
+    let up = new THREE.Vector3().fromArray(cam.up)
+    let look_at = new THREE.Vector3().fromArray(cam.look_at)
+    let pos = new THREE.Vector3().fromArray(cam.pos)
+    let direction = new THREE.Vector3().subVectors(look_at, pos)
+
+    let z = new THREE.Vector3().subVectors(pos, look_at).normalize()
+    let x = new THREE.Vector3().crossVectors(up, z).normalize()
+    let y = new THREE.Vector3().crossVectors(z, x).normalize()
+    
+    let direction_cos = direction.dot(x)
+    let direction_angle = Math.acos(direction_cos)
+    let direction_sin = Math.sin(direction_angle)
+    let new_angle = direction_angle + degrees * (Math.PI/180)
+
+    let pseudo_y = new THREE.Vector3()
+    let pseudo_z = new THREE.Vector3()
+    pseudo_y.y = direction.length() * (Math.cos(new_angle) - direction_cos)
+    pseudo_z.z = direction.length() * (Math.sin(new_angle) - direction_sin)
+
+    let util_matrix = new THREE.Matrix4()
+    util_matrix = Transform.rotate_x(util_matrix, Math.acos(direction.dot(x)))
+
+    let real_y = new THREE.Vector3()
+    real_y.add(x.clone().multiplyScalar(pseudo_y.x))
+    real_y.add(y.clone().multiplyScalar(pseudo_y.y))
+    real_y.add(z.clone().negate().multiplyScalar(pseudo_y.z))
+    let real_z = new THREE.Vector3()
+    real_z.add(x.clone().multiplyScalar(pseudo_z.x))
+    real_z.add(y.clone().multiplyScalar(pseudo_z.y))
+    real_z.add(z.clone().negate().multiplyScalar(pseudo_z.z))
+
+    direction.add(real_y).add(real_z).normalize()
+    look_at.addVectors(direction, pos)
+    new_cam.look_at = look_at.toArray()
+
+    return new_cam
+}
+
+export function rotate_clockwise(cam: Camera, degrees = 0) {
+    let util_matrix = new THREE.Matrix4()
+    util_matrix = Transform.rotate_z(util_matrix, degrees)
+    let new_cam = clone_cam(cam)
+    new_cam.up = new THREE.Vector3().fromArray(cam.up)
+                        .applyMatrix4(util_matrix).toArray()
     return new_cam
 }

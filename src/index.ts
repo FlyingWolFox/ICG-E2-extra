@@ -36,6 +36,7 @@ let cube: Renderer.Mesh = {
 
 
 let camera = new Camera.Camera([1.3,1.7,2.0])
+//let camera = new Camera.Camera([0,0,2.0])
 
 
 var playfield = {
@@ -78,22 +79,22 @@ function mode_2() {
         }
 
         if (Keys.input['s1_up']) 
-                camera = Camera.translate(camera, [0, 0, -0.1])
+                camera = Camera.move(camera, [0, 0, -0.1])
         if (Keys.input['s1_down'])
-                camera = Camera.translate(camera, [0, 0, 0.1])
+                camera = Camera.move(camera, [0, 0, 0.1])
         if (Keys.input['s1_left'])
-                camera = Camera.translate(camera, [-0.1, 0, 0])
+                camera = Camera.move(camera, [-0.1, 0, 0])
         if (Keys.input['s1_right'])
-                camera = Camera.translate(camera, [0.1, 0, 0])
+                camera = Camera.move(camera, [0.1, 0, 0])
 
         if (Keys.input['s2_up'])
-                camera = Camera.rotate_vertical(camera, -5)
+                camera = Camera.rotate_vertical(camera, -2.5)
         if (Keys.input['s2_down'])
-                camera = Camera.rotate_vertical(camera, 5)
+                camera = Camera.rotate_vertical(camera, 2.5)
         if (Keys.input['s2_left'])
-                camera = Camera.rotate_horizontal(camera, 5)
+                camera = Camera.rotate_horizontal(camera, 2.5)
         if (Keys.input['s2_right'])
-                camera = Camera.rotate_horizontal(camera, -5)
+                camera = Camera.rotate_horizontal(camera, -2.5)
         
 }
 
