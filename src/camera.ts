@@ -139,6 +139,12 @@ export function move(cam: Camera, by: Coord) {
     return new_cam
 }
 
+let cam_b = {
+    x: new THREE.Vector3(),
+    y: new THREE.Vector3(),
+    z: new THREE.Vector3,
+    inited: false
+}
 export function rotate_horizontal(cam: Camera, degrees = 0) {
     let new_cam = clone_cam(cam)
 
@@ -147,33 +153,44 @@ export function rotate_horizontal(cam: Camera, degrees = 0) {
     let pos = new THREE.Vector3().fromArray(cam.pos)
     let direction = new THREE.Vector3().subVectors(look_at, pos)
 
+    if (!cam_b.inited) {
+        let z = new THREE.Vector3().subVectors(pos, look_at).normalize()
+        let x = new THREE.Vector3().crossVectors(up, z).normalize()
+        let y = new THREE.Vector3().crossVectors(z, x).normalize()
+        cam_b.x = x
+        cam_b.y = y
+        cam_b.z = z
+        cam_b.inited = true;
+    }
     let z = new THREE.Vector3().subVectors(pos, look_at).normalize()
-    let x = new THREE.Vector3().crossVectors(up, z).normalize()
-    let y = new THREE.Vector3().crossVectors(z, x).normalize()
+    let x = new THREE.Vector3().crossVectors(cam_b.y, z).normalize()
+    let y = cam_b.y
+    cam_b.z = z
+    cam_b.x = x
     
+    /*
+    *******************************************
+    // direction is always perpendicular to x component!
+    // the angle of the direction is alwais 90º!
+    // doing the calculations will result in errors because
+    // of floating point precision (or better, the loss of it)
+    *******************************************
     let direction_cos = direction.normalize().dot(x)
     let direction_angle = Math.acos(direction_cos)
     let direction_sin = Math.sin(direction_angle)
-    let new_angle = direction_angle + degrees * (Math.PI/180)
+    */
+    const direction_cos = 0
+    const direction_sin = 1
+    let new_angle = (90 + degrees) * (Math.PI/180)
 
-    let pseudo_x = new THREE.Vector3()
-    let pseudo_z = new THREE.Vector3()
-    pseudo_x.x = direction.length() * (Math.cos(new_angle) - direction_cos)
-    pseudo_z.z = direction.length() * (Math.sin(new_angle) - direction_sin)
+    let pseudo_x = direction.length() * (Math.cos(new_angle) - direction_cos)
+    let pseudo_z = direction.length() * (Math.sin(new_angle) - direction_sin)
 
-    let util_matrix = new THREE.Matrix4()
-    util_matrix = Transform.rotate_y(util_matrix, Math.acos(direction.dot(x)))
+    let move_vec = new THREE.Vector3()
+    move_vec.add(x.clone().multiplyScalar(pseudo_x))
+    move_vec.add(z.clone().negate().multiplyScalar(pseudo_z))
 
-    let real_x = new THREE.Vector3()
-    real_x.add(x.clone().multiplyScalar(pseudo_x.x))
-    real_x.add(y.clone().multiplyScalar(pseudo_x.y))
-    real_x.add(z.clone().negate().multiplyScalar(pseudo_x.z))
-    let real_z = new THREE.Vector3()
-    real_z.add(x.clone().multiplyScalar(pseudo_z.x))
-    real_z.add(y.clone().multiplyScalar(pseudo_z.y))
-    real_z.add(z.clone().negate().multiplyScalar(pseudo_z.z))
-
-    direction.add(real_x).add(real_z).normalize()
+    direction.add(move_vec).normalize()
     look_at.addVectors(direction, pos)
     new_cam.look_at = look_at.toArray()
 
