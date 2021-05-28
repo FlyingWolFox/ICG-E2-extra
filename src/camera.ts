@@ -96,20 +96,17 @@ export function rotate_x(cam: Camera, degrees = 0) {
     let direction = new THREE.Vector3().subVectors(look_at, pos)
     direction.applyMatrix4(util_matrix)
     look_at.addVectors(direction, pos)
-
     return change_rendering_basis(cam, look_at.toArray())
 }
 
 export function rotate_y(cam: Camera, degrees = 0) {
     let util_matrix = new THREE.Matrix4()
     util_matrix = Transform.rotate_x(util_matrix, degrees)
-
     let look_at = new THREE.Vector3().fromArray(cam.look_at)
     let pos = new THREE.Vector3().fromArray(cam.pos)
     let direction = new THREE.Vector3().subVectors(look_at, pos)
     direction.applyMatrix4(util_matrix)
     look_at.addVectors(direction, pos)
-
     return change_rendering_basis(cam, look_at.toArray())
 }
 

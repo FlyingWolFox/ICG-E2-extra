@@ -94,8 +94,7 @@ function mode_2() {
         if (Keys.input['s2_left'])
                 camera = Camera.rotate_horizontal(camera, 2.5)
         if (Keys.input['s2_right'])
-                camera = Camera.rotate_horizontal(camera, -2.5)
-        
+                camera = Camera.rotate_horizontal(camera, -2.5)        
 }
 
 let shear_counter = 0
