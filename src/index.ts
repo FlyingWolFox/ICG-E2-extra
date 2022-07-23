@@ -267,7 +267,7 @@ function mode_4() {
 
     //let top: Renderer.Vertice = [Math.cos(0)*Math.sin(0), Math.sin(0)*Math.sin(0), Math.cos(0)]
     //let top: Renderer.Vertice = [0, 0, 1]
-    vertices.push([0, 0, (1 - Math.random()%0.5)*1])
+    vertices.push([0, 0, (Math.random() + 0.5) - Math.random() + 0.35 *1])
 
     //let middle: Renderer.Vertice[] = []
     for (let t = 1; t < stacks; t++) {
@@ -338,7 +338,7 @@ function loop() {
         text = '(Shear Animation)'
     }
     else if (Keys.input['mode_4']) {
-        generate_sphere()
+        mode_4()
     }
     else if (Keys.input['mode_5']) {
         cool_effect()

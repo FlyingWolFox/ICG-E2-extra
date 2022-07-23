@@ -11,6 +11,7 @@ export class Canvas {
     this.scale = scale;
     this.context.scale(scale, scale);
     this.clear_color = 'rgba(0,0,0,255)';
+    this.clear_color = 'rgba(255,255,255,255)';
   }
 
   clear(): void {
