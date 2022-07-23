@@ -338,12 +338,15 @@ function loop() {
         text = '(Shear Animation)'
     }
     else if (Keys.input['mode_4']) {
-        mode_4()
+        generate_sphere(1)
     }
     else if (Keys.input['mode_5']) {
-        cool_effect()
+        mode_4()
     }
     else if (Keys.input['mode_6']) {
+        cool_effect()
+    }
+    else if (Keys.input['mode_7']) {
         cube = {...cube_copy}
     }
 
